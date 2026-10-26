@@ -79,7 +79,10 @@ Implemented:
   ```json
   { "languages": { "AsciiDoc": { "document_symbols": "on" } } }
   ```
-- Zed language-server registration using an `adoc-ls` executable available on `PATH`.
+- Zed language-server registration that runs an `adoc-ls` found on `PATH`, or otherwise downloads
+  `adoc-ls` from the latest [AdocFoundry release](https://github.com/bovinemagnet/AdocFoundry/releases)
+  for Linux, macOS and Windows (x86-64 and AArch64) and keeps it up to date. When the release cannot be
+  fetched, for example offline, it starts the most recent earlier download instead.
 - HTML preview via two code actions. `AsciiDoc: render preview` renders once;
   `AsciiDoc: render live preview` additionally re-renders whenever the document is saved
   and embeds a reloader so the page keeps up; while a document is being followed that
@@ -117,14 +120,16 @@ cargo test
 cargo check --target wasm32-wasip2
 ```
 
-Install the language-server executable from AdocFoundry before loading the repository root as a Zed dev extension:
+The extension downloads `adoc-ls` from the latest AdocFoundry release the first time it is needed. To run a local build of the language server instead, install it from AdocFoundry so that it is on `PATH`, where it takes precedence over the download:
 
 ```sh
 cargo install --git https://github.com/bovinemagnet/AdocFoundry adoc-ls
 ```
 
+The same command is needed on platforms without a prebuilt release, such as 32-bit x86.
+
 Changes to the language server, its diagnostics, completion or Antora resolution belong in AdocFoundry.
 
-Zed dev extension builds require Rust installed through `rustup` with the `wasm32-wasip2` target. Once loaded, the extension starts `adoc-ls --stdio` from `PATH` for AsciiDoc buffers.
+Zed dev extension builds require Rust installed through `rustup` with the `wasm32-wasip2` target. Once loaded, the extension starts `adoc-ls --stdio` for AsciiDoc buffers.
 
 Use `docs/prd/PRD-AsciiDoc_for_Zed_Initial_Implementation_Specification.md` as the implementation source of truth.

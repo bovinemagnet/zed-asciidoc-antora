@@ -5,7 +5,7 @@
 This repository is the Zed extension for AsciiDoc. The language server `adoc-ls` and its semantic crates live in AdocFoundry (https://github.com/bovinemagnet/AdocFoundry); language-server changes belong there.
 
 - `docs/prd/` contains the product requirements and initial implementation specification.
-- `src/lib.rs` is the whole extension crate: it starts `adoc-ls --stdio` from `PATH`.
+- `src/lib.rs` is the whole extension crate: it starts `adoc-ls --stdio` from `PATH`, or downloads `adoc-ls` from the latest AdocFoundry release when it is not on `PATH`.
 - `languages/` and `extension.toml` define Zed language metadata and Tree-sitter queries.
 - `snippets/` contains editor snippets.
 

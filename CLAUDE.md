@@ -17,11 +17,11 @@ cargo test
 cargo check --target wasm32-wasip2          # Zed Wasm target
 ```
 
-Load the repository root as a Zed dev extension only after `cargo install --git https://github.com/bovinemagnet/AdocFoundry adoc-ls` (or `cargo install --path crates/adoc-ls` from an AdocFoundry checkout); the extension resolves `adoc-ls` from `PATH` and starts it with `--stdio`. Dev-extension builds need rustup with the `wasm32-wasip2` target.
+Load the repository root as a Zed dev extension. The extension starts `adoc-ls --stdio`, taking it from `PATH` when present (`cargo install --git https://github.com/bovinemagnet/AdocFoundry adoc-ls`, or `cargo install --path crates/adoc-ls` from an AdocFoundry checkout) and otherwise downloading it from the latest AdocFoundry release. Dev-extension builds need rustup with the `wasm32-wasip2` target.
 
 ## Structure
 
-- `src/lib.rs` — the whole extension crate (`asciidoc-zed-extension`, built for `wasm32-wasip2`): finds `adoc-ls` on `PATH` and returns the command Zed runs.
+- `src/lib.rs` — the whole extension crate (`asciidoc-zed-extension`, built for `wasm32-wasip2`): finds `adoc-ls` on `PATH`, otherwise downloads it from the latest AdocFoundry release, and returns the command Zed runs.
 - `extension.toml` — registers the language, snippets (`snippets/asciidoc.json`), the `adoc-ls` language server, and the two Tree-sitter grammars pinned by revision.
 - `languages/asciidoc/` and `languages/asciidoc-inline/` — language config plus `.scm` queries (highlights, outline, injections, brackets, indents, overrides). Tree-sitter is for syntax, outline, folding and injections only — never for attribute evaluation, include expansion, Antora coordinates or cross-file references.
 
