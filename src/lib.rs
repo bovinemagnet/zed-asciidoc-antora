@@ -1,6 +1,7 @@
 use std::fs;
 
 use zed_extension_api as zed;
+use zed_extension_api::settings::{CommandSettings, LspSettings};
 
 const SERVER_BINARY: &str = "adoc-ls";
 const SERVER_REPOSITORY: &str = "bovinemagnet/AdocFoundry";
@@ -182,10 +183,29 @@ fn update_binary(
     Ok(binary_path)
 }
 
-fn server_command(binary: String, env: Vec<(String, String)>) -> zed::Command {
+/// Builds the command Zed runs, taking arguments and extra environment from the
+/// `lsp.adoc-ls.binary` settings when they are given.
+fn server_command(
+    binary: String,
+    settings: Option<&CommandSettings>,
+    mut env: Vec<(String, String)>,
+) -> zed::Command {
+    let args = settings
+        .and_then(|settings| settings.arguments.clone())
+        .unwrap_or_else(|| vec![STDIO_ARG.to_owned()]);
+
+    if let Some(extra) = settings.and_then(|settings| settings.env.as_ref()) {
+        env.retain(|(key, _)| !extra.contains_key(key));
+        env.extend(
+            extra
+                .iter()
+                .map(|(key, value)| (key.clone(), value.clone())),
+        );
+    }
+
     zed::Command {
         command: binary,
-        args: vec![STDIO_ARG.to_owned()],
+        args,
         env,
     }
 }
@@ -202,12 +222,23 @@ impl zed::Extension for AsciiDocExtension {
         language_server_id: &zed::LanguageServerId,
         worktree: &zed::Worktree,
     ) -> zed::Result<zed::Command> {
-        let binary = match worktree.which(SERVER_BINARY) {
-            Some(binary) => binary,
-            None => self.downloaded_binary_path(language_server_id)?,
+        let settings = LspSettings::for_worktree(SERVER_BINARY, worktree)
+            .ok()
+            .and_then(|settings| settings.binary);
+
+        let binary = match settings.as_ref().and_then(|settings| settings.path.clone()) {
+            Some(path) => path,
+            None => match worktree.which(SERVER_BINARY) {
+                Some(binary) => binary,
+                None => self.downloaded_binary_path(language_server_id)?,
+            },
         };
 
-        Ok(server_command(binary, worktree.shell_env()))
+        Ok(server_command(
+            binary,
+            settings.as_ref(),
+            worktree.shell_env(),
+        ))
     }
 }
 
@@ -217,16 +248,31 @@ zed::register_extension!(AsciiDocExtension);
 mod tests {
     use super::*;
 
+    fn binary_settings(
+        arguments: Option<&[&str]>,
+        env: Option<&[(&str, &str)]>,
+    ) -> CommandSettings {
+        CommandSettings {
+            path: None,
+            arguments: arguments.map(|arguments| arguments.iter().map(|a| a.to_string()).collect()),
+            env: env.map(|env| {
+                env.iter()
+                    .map(|(key, value)| (key.to_string(), value.to_string()))
+                    .collect()
+            }),
+        }
+    }
+
     #[test]
     fn server_command_requests_stdio_transport() {
-        let command = server_command("/usr/local/bin/adoc-ls".to_owned(), Vec::new());
+        let command = server_command("/usr/local/bin/adoc-ls".to_owned(), None, Vec::new());
 
         assert_eq!(command.args, vec!["--stdio".to_owned()]);
     }
 
     #[test]
     fn server_command_uses_the_resolved_binary_path() {
-        let command = server_command("/opt/adoc-ls".to_owned(), Vec::new());
+        let command = server_command("/opt/adoc-ls".to_owned(), None, Vec::new());
 
         assert_eq!(command.command, "/opt/adoc-ls");
     }
@@ -235,9 +281,48 @@ mod tests {
     fn server_command_forwards_the_shell_environment() {
         let env = vec![("PATH".to_owned(), "/usr/bin".to_owned())];
 
-        let command = server_command("adoc-ls".to_owned(), env.clone());
+        let command = server_command("adoc-ls".to_owned(), None, env.clone());
 
         assert_eq!(command.env, env);
+    }
+
+    #[test]
+    fn server_command_keeps_stdio_when_the_settings_give_no_arguments() {
+        let settings = binary_settings(None, None);
+
+        let command = server_command("adoc-ls".to_owned(), Some(&settings), Vec::new());
+
+        assert_eq!(command.args, vec!["--stdio".to_owned()]);
+    }
+
+    #[test]
+    fn server_command_takes_its_arguments_from_the_settings() {
+        let settings = binary_settings(Some(&["--stdio", "--log", "debug"]), None);
+
+        let command = server_command("adoc-ls".to_owned(), Some(&settings), Vec::new());
+
+        assert_eq!(command.args, vec!["--stdio", "--log", "debug"]);
+    }
+
+    #[test]
+    fn server_command_adds_the_settings_environment_over_the_shell_environment() {
+        let shell_env = vec![
+            ("PATH".to_owned(), "/usr/bin".to_owned()),
+            ("RUST_LOG".to_owned(), "warn".to_owned()),
+        ];
+        let settings = binary_settings(None, Some(&[("RUST_LOG", "debug"), ("EXTRA", "1")]));
+
+        let mut env = server_command("adoc-ls".to_owned(), Some(&settings), shell_env).env;
+        env.sort();
+
+        assert_eq!(
+            env,
+            vec![
+                ("EXTRA".to_owned(), "1".to_owned()),
+                ("PATH".to_owned(), "/usr/bin".to_owned()),
+                ("RUST_LOG".to_owned(), "debug".to_owned()),
+            ]
+        );
     }
 
     #[test]

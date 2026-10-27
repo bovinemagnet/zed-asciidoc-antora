@@ -1,6 +1,6 @@
-# AsciiDoc for Zed
+# AsciiDoc and Antora for Zed
 
-AsciiDoc for Zed is an early-stage Zed extension and language-service project for first-class AsciiDoc, Asciidoctor, and Antora authoring.
+AsciiDoc and Antora for Zed (`asciidoc-antora`) is a Zed extension for first-class AsciiDoc, Asciidoctor, and Antora authoring.
 
 This repository is the Zed extension: language registration, Tree-sitter queries, snippets and the
 glue that starts the `adoc-ls` language server. The language server and the crates behind it
@@ -9,13 +9,17 @@ live in [AdocFoundry](https://github.com/bovinemagnet/AdocFoundry), where the sa
 AdocFoundry desktop editor, so improvements made there reach Zed users too. The feature list below
 describes what the extension delivers together with `adoc-ls`.
 
+Zed's extension API has no webview, so an extension cannot show a rendered preview beside the
+editor. That preview pane is why AdocFoundry exists: its desktop editor renders the page natively
+beside the source as you type, with scroll sync both ways and no browser, Asciidoctor, Node.js or
+Java. The `AdocFoundry: preview page` task opens the current page there.
+
 ## Current Status
 
 Implemented:
 
-- Thin registered Zed Wasm extension entry point.
 - Zed language registration for `.adoc`, `.asciidoc`, and `.ad`.
-- Pinned block and inline Tree-sitter grammars with highlighting, outline, and source-block injection queries.
+- Pinned block and inline Tree-sitter grammars with highlighting, outline, text-object and injection queries.
   The grammars come from a fork whose `zed` branch carries five changes upstream does not have: a
   `table_header_row` node, so a table's header row can be styled apart from its body; comments that no
   longer close the section containing them, which previously left every heading below the first comment
@@ -23,10 +27,14 @@ Implemented:
   table cells written as `| text` that can carry block content, so an admonition or listing belonging to
   a cell no longer breaks the table around it; and constrained spans that keep word-internal delimiters,
   so `_"COMP1010_TUT01"_` is one italic run rather than several.
-- Core AsciiDoc domain types.
-- Minimal semantic parser for titles, sections, attributes, anchors, xrefs, and includes.
-- Replacement-based workspace index and basic file/anchor definition resolution.
-- Renderer abstraction and direct system Asciidoctor adapter for file or unsaved source, safe modes, attributes, and custom stylesheets.
+- Source blocks highlighted in their declared language (`[source,rust]`), `latexmath:[…]` as LaTeX
+  and `pass:[…]` as HTML, when Zed has those languages. `stem:[…]` is left alone, since its notation
+  follows the document's `:stem:` attribute and defaults to AsciiMath.
+- Vim-mode text objects: `ac` / `ic` select a section (inside is everything below its title),
+  `af` / `if` a delimited block (inside is everything between its delimiter lines), and `gc` a
+  comment.
+- Identifiers such as `my-section-id` and `{my-attr}` count as one word for word movement and
+  double-click selection.
 - `adoc-ls` stdio transport with incremental synchronization, document symbols, diagnostics, and Go to Definition.
 - Workspace indexing and conservative diagnostics for missing local xrefs, anchors, includes,
   and block images. An image is judged only in a file nothing includes, since Asciidoctor
@@ -87,27 +95,51 @@ Implemented:
   `AsciiDoc: render live preview` additionally re-renders whenever the document is saved
   and embeds a reloader so the page keeps up; while a document is being followed that
   action becomes `AsciiDoc: stop live preview`, and closing the buffer stops it too. Both render the
-  open buffer (saved or not) with Asciidoctor,
+  open buffer (saved or not), with Asciidoctor when `asciidoctor` is on `PATH` and otherwise with
+  AdocFoundry's own renderer, which needs no external tool and draws diagrams and typeset STEM.
+  Either way the preview
   merges the component's `antora.yml` `asciidoc.attributes` (where `true` sets an
   attribute, `false` and `~` unset it, and a trailing `@` lets the page override it)
   and Antora page and family-directory attributes (`moduledir`, `pagesdir`,
   `partialsdir`, `examplesdir`, `attachmentsdir`, `imagesdir`), rewrites
   family-qualified includes such as
   `partial$note.adoc` to absolute paths,
-  and opens the result in the default browser. Includes nested inside an
+  and opens the result in the default browser. With Asciidoctor, includes nested inside an
   included file are rewritten too, via copies in a scratch directory; reading those
   copies is why preview renders with Asciidoctor's `unsafe` safe mode. Cyclic includes
   stop at the repeat rather than recursing.
-- Small deterministic fixtures.
+- Find References: on a page, the pages that link to it and the includes that include it; on an
+  anchor or a reference to one, every reference to that anchor.
+- Rename: renaming an anchor id renames it and its references, and renaming an `.adoc` file in
+  Zed's project panel first rewrites the xrefs and navigation entries that name it.
+- Tasks (`task: spawn`) for AsciiDoc files, each needing its tool on `PATH`:
+  - `AdocFoundry: preview page` opens the page in the AdocFoundry desktop editor (`adocfoundry`).
+  - `AdocFoundry: check workspace` prints every diagnostic in the worktree as
+    `path:line:col: severity code message`, failing on warnings (`adocfoundry-cli check`).
+  - `AdocFoundry: render page to HTML` writes `<page>.html` beside the page (`adocfoundry-cli render`).
+  - `AdocFoundry: export page to PDF` writes `<page>.pdf` beside the page (`adocfoundry-cli pdf`).
+  - `Asciidoctor: render page to HTML` runs `asciidoctor` on the page.
+  - `Antora: build site` runs `npx antora antora-playbook.yml` in the worktree root.
+
+  `adocfoundry` and `adocfoundry-cli` come with every AdocFoundry release package, and
+  `adocfoundry-cli` is also published as an archive of its own. The workspace check and PDF export
+  are server commands that `adoc-ls` does not offer as code actions, so in Zed they are reached
+  through these tasks.
+- `adoc-ls` settings come from AdocFoundry's settings files, the user settings file and the
+  workspace's `.adocfoundry.toml`, not from Zed. Zed's `lsp.adoc-ls.binary` setting chooses the
+  binary, its arguments (`--stdio` unless given) and extra environment variables:
+
+  ```json
+  { "lsp": { "adoc-ls": { "binary": { "path": "/path/to/adoc-ls", "arguments": ["--stdio"] } } } }
+  ```
 
 Not implemented yet:
 
 - Diagnostics inside `antora.yml` itself, and re-reading descriptors when they change.
-- Rename and references. The only code action is the preview command above.
 - A preview pane inside Zed. The extension API exposes no webview or preview capability,
-  so preview opens externally; see
+  so preview opens in the browser, or beside the source in AdocFoundry through the
+  `AdocFoundry: preview page` task; see
   `docs/prd/DESIGN-Preview_Pipeline_and_Native_Rendering.md`.
-- A pure-Rust renderer. Preview currently requires the `asciidoctor` executable on `PATH`.
 
 ## Development
 

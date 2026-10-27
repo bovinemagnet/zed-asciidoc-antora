@@ -23,7 +23,7 @@ Load the repository root as a Zed dev extension. The extension starts `adoc-ls -
 
 - `src/lib.rs` — the whole extension crate (`asciidoc-zed-extension`, built for `wasm32-wasip2`): finds `adoc-ls` on `PATH`, otherwise downloads it from the latest AdocFoundry release, and returns the command Zed runs.
 - `extension.toml` — registers the language, snippets (`snippets/asciidoc.json`), the `adoc-ls` language server, and the two Tree-sitter grammars pinned by revision.
-- `languages/asciidoc/` and `languages/asciidoc-inline/` — language config plus `.scm` queries (highlights, outline, injections, brackets, indents, overrides). Tree-sitter is for syntax, outline, folding and injections only — never for attribute evaluation, include expansion, Antora coordinates or cross-file references.
+- `languages/asciidoc/` and `languages/asciidoc-inline/` — language config plus `.scm` queries (highlights, outline, injections, brackets, text objects, overrides), and `languages/asciidoc/tasks.json` for the AdocFoundry, Asciidoctor and Antora tasks. Tree-sitter is for syntax, outline, folding, text objects and injections only — never for attribute evaluation, include expansion, Antora coordinates or cross-file references.
 
 ## Conventions that must be preserved
 
