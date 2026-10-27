@@ -1,6 +1,6 @@
 id = "asciidoc-antora"
 name = "AsciiDoc and Antora"
-version = "1.0.1"
+version = "1.0.2"
 schema_version = 1
 authors = ["Paul Snow"]
 description = "AsciiDoc, Asciidoctor, and Antora language support"
@@ -13,10 +13,10 @@ languages = ["AsciiDoc"]
 
 [grammars.asciidoc]
 repository = "https://github.com/bovinemagnet/tree-sitter-asciidoc"
-rev = "948a2c0447e48835abe4dc363dedb821ba52ed5f"
+rev = "a95f9fb05937f625b33692b1f4b9bc9da42cf49b"
 path = "tree-sitter-asciidoc"
 
 [grammars.asciidoc_inline]
 repository = "https://github.com/bovinemagnet/tree-sitter-asciidoc"
-rev = "948a2c0447e48835abe4dc363dedb821ba52ed5f"
+rev = "a95f9fb05937f625b33692b1f4b9bc9da42cf49b"
 path = "tree-sitter-asciidoc_inline"
