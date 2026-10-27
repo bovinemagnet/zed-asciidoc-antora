@@ -20,14 +20,14 @@ Implemented:
 
 - Zed language registration for `.adoc`, `.asciidoc`, and `.ad`.
 - Pinned block and inline Tree-sitter grammars with highlighting, outline, text-object and injection queries.
-  The grammars come from a fork whose `zed` branch carries five changes upstream does not have: a
-  `table_header_row` node, so a table's header row can be styled apart from its body; comments that no
-  longer close the section containing them, which previously left every heading below the first comment
-  unparsed; document attribute values that accept globs (`src/**/*.kt`) and empty values (`:name: `);
-  table cells written as `| text` that can carry block content, so an admonition or listing belonging to
-  a cell no longer breaks the table around it; and constrained spans that keep word-internal delimiters,
-  so `_"COMP1010_TUT01"_` is one italic run rather than several.
-- Source blocks highlighted in their declared language (`[source,rust]`), `latexmath:[…]` as LaTeX
+  The grammars come from a fork whose `zed` branch carries four changes upstream does not have: a
+  `table_header_row` node, so a table's header row can be styled apart from its body; document attribute
+  values that accept globs (`src/**/*.kt`) and empty values (`:name: `); table cells written as `| text`
+  that can carry block content, so an admonition or listing belonging to a cell no longer breaks the
+  table around it, and the cell's text resumes after the block; and constrained spans that keep
+  word-internal delimiters, so `_"COMP1010_TUT01"_` is one italic run rather than several.
+- Source blocks highlighted in their declared language (`[source,rust]`), even when a comment sits
+  between the attribute line and the listing, `latexmath:[…]` as LaTeX
   and `pass:[…]` as HTML, when Zed has those languages. `stem:[…]` is left alone, since its notation
   follows the document's `:stem:` attribute and defaults to AsciiMath.
 - Vim-mode text objects: `ac` / `ic` select a section (inside is everything below its title),
