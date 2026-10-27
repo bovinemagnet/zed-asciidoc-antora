@@ -1,0 +1,34 @@
+[
+  {
+    "label": "AdocFoundry: preview page",
+    "command": "adocfoundry",
+    "args": ["$ZED_WORKTREE_ROOT", "$ZED_FILE"],
+    "reveal": "never"
+  },
+  {
+    "label": "AdocFoundry: check workspace",
+    "command": "adocfoundry-cli",
+    "args": ["check", "$ZED_WORKTREE_ROOT", "--fail-on", "warning"]
+  },
+  {
+    "label": "AdocFoundry: render page to HTML",
+    "command": "adocfoundry-cli",
+    "args": ["render", "$ZED_FILE", "--output", "$ZED_DIRNAME/$ZED_STEM.html"]
+  },
+  {
+    "label": "AdocFoundry: export page to PDF",
+    "command": "adocfoundry-cli",
+    "args": ["pdf", "$ZED_FILE"]
+  },
+  {
+    "label": "Asciidoctor: render page to HTML",
+    "command": "asciidoctor",
+    "args": ["$ZED_FILE"]
+  },
+  {
+    "label": "Antora: build site",
+    "command": "npx",
+    "args": ["antora", "antora-playbook.yml"],
+    "cwd": "$ZED_WORKTREE_ROOT"
+  }
+]
