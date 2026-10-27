@@ -8,6 +8,8 @@
   [
     (section_block)
     (section)
+    (line_comment)
+    (block_comment)
   ]+ @class.inside)
 
 [
