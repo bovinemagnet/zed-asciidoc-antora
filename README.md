@@ -38,6 +38,21 @@ Implemented:
   comment.
 - Identifiers such as `my-section-id` and `{my-attr}` count as one word for word movement and
   double-click selection.
+- Typing `*` or `_` over a selection wraps it as bold or italic, and typing it again wraps the
+  same text once more, giving `**bold**` or `__italic__` for use inside a word. Typed with
+  nothing selected, each inserts a single character. Zed does not let an extension bind keys,
+  so for Ctrl+B and Ctrl+I add this to your keymap (`zed: open keymap`); in AsciiDoc files
+  it replaces Zed's own use of those keys:
+
+  ```json
+  {
+    "context": "Editor && (extension == adoc || extension == asciidoc || extension == ad)",
+    "bindings": {
+      "ctrl-b": ["workspace::SendKeystrokes", "*"],
+      "ctrl-i": ["workspace::SendKeystrokes", "_"]
+    }
+  }
+  ```
 - `adoc-ls` stdio transport with incremental synchronization, document symbols, diagnostics, and Go to Definition.
 - Workspace indexing and conservative diagnostics for missing local xrefs, anchors, includes,
   and block images. An image is judged only in a file nothing includes, since Asciidoctor
