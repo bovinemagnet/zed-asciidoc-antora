@@ -4,7 +4,7 @@ version = "1.0.2"
 schema_version = 1
 authors = ["Paul Snow"]
 description = "AsciiDoc, Asciidoctor, and Antora language support"
-repository = "https://github.com/bovinemagnet/zed-asciidoc"
+repository = "https://github.com/bovinemagnet/zed-asciidoc-antora"
 snippets = ["./snippets/asciidoc.json"]
 
 [language_servers.adoc-ls]

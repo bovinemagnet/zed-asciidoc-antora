@@ -3,7 +3,7 @@ name = "asciidoc-zed-extension"
 version = "1.0.2"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/bovinemagnet/zed-asciidoc"
+repository = "https://github.com/bovinemagnet/zed-asciidoc-antora"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
