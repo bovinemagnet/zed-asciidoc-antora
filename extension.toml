@@ -13,10 +13,10 @@ languages = ["AsciiDoc"]
 
 [grammars.asciidoc]
 repository = "https://github.com/bovinemagnet/tree-sitter-asciidoc"
-rev = "a95f9fb05937f625b33692b1f4b9bc9da42cf49b"
+rev = "74a3e2315a6ab4d4551a5fbb5b56ceb5c663fc74"
 path = "tree-sitter-asciidoc"
 
 [grammars.asciidoc_inline]
 repository = "https://github.com/bovinemagnet/tree-sitter-asciidoc"
-rev = "a95f9fb05937f625b33692b1f4b9bc9da42cf49b"
+rev = "74a3e2315a6ab4d4551a5fbb5b56ceb5c663fc74"
 path = "tree-sitter-asciidoc_inline"
