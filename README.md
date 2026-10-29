@@ -21,11 +21,12 @@ Implemented:
 - Zed language registration for `.adoc`, `.asciidoc`, and `.ad`.
 - Pinned block and inline Tree-sitter grammars with highlighting, outline, text-object and injection queries.
   The grammars come from a fork, maintained on its `master` branch since upstream was archived, which
-  carries two changes upstream never took: a `table_header_row` node, so a table's header row can be
+  carries three changes upstream never took: a `table_header_row` node, so a table's header row can be
   styled apart from its body; and table cells written as `| text` that can carry block content, so an
   admonition or listing belonging to a cell no longer breaks the table around it, and the cell's text
-  resumes after the block. It also has the fixes that went upstream before the archive, among them
-  document attribute values that accept globs (`src/**/*.kt`) and empty values (`:name: `), and
+  resumes after the block; and consecutive prose lines parsed as one paragraph, so `*bold*` or
+  `_italic_` broken over two lines of a paragraph is still recognised. It also has the fixes that went upstream before the archive,
+  among them document attribute values that accept globs (`src/**/*.kt`) and empty values (`:name: `), and
   constrained spans that keep word-internal delimiters, so `_"COMP1010_TUT01"_` is one italic run
   rather than several.
 - Source blocks highlighted in their declared language (`[source,rust]`), even when a comment sits
